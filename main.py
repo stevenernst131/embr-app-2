@@ -226,6 +226,11 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 # Health & system endpoints
 # ---------------------------------------------------------------------------
+@app.get("/api/bug/bad-query")
+def bad_query():
+    """BUG: Query a non-existent table."""
+    return dict(query_db("SELECT * FROM this_table_does_not_exist LIMIT 1", fetch_one=True))
+
 @app.get("/health")
 def health():
     checks = {"status": "healthy", "version": APP_VERSION, "environment": APP_ENV, "timestamp": datetime.now(timezone.utc).isoformat()}

@@ -3,7 +3,7 @@ platformVersion: "3.12"
 autoDeploy: true
 
 run:
-  port: 9999
+  port: 8000
   startCommand: bash /output/start.sh
 
 database:
