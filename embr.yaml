@@ -4,13 +4,19 @@ autoDeploy: true
 
 run:
   port: 8000
-  startCommand: uvicorn main:app --host 0.0.0.0 --port 8000
+  startCommand: python -m uvicorn main:app --host 0.0.0.0 --port 8000
 
 database:
   enabled: true
   engine: postgres
   framework: raw
   schema: db/schema.sql
+
+cache:
+  enabled: true
+
+blobs:
+  enabled: true
 
 healthCheck:
   path: /health
