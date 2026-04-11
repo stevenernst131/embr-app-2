@@ -81,8 +81,13 @@ def cache_get(key: str):
     if c:
         try:
             val = c.get(key)
-            return json.loads(val) if val else None
-        except Exception:
+            if val:
+                logger.info(f"Cache HIT: {key}")
+                return json.loads(val)
+            logger.info(f"Cache MISS: {key}")
+            return None
+        except Exception as e:
+            logger.warning(f"Cache get error for {key}: {e}")
             return None
     return None
 
@@ -90,9 +95,11 @@ def cache_set(key: str, value, ttl: int = 300):
     c = get_cache()
     if c:
         try:
-            c.setex(key, ttl, json.dumps(value, default=str))
-        except Exception:
-            pass
+            serialized = json.dumps(value, default=str)
+            c.setex(key, ttl, serialized)
+            logger.info(f"Cache SET: {key} (ttl={ttl}, bytes={len(serialized)})")
+        except Exception as e:
+            logger.warning(f"Cache set error for {key}: {e}")
 
 def cache_delete(pattern: str):
     c = get_cache()
@@ -782,4 +789,89 @@ def debug_env():
         "BLOB_API_KEY": "configured" if BLOB_API_KEY else "missing",
         "python_version": os.popen("python3 --version 2>&1").read().strip(),
         "pid": os.getpid(),
+    }
+
+# ---------------------------------------------------------------------------
+# Blob storage API round-trip endpoints
+# ---------------------------------------------------------------------------
+class BlobWriteRequest(BaseModel):
+    key: str = Field(..., min_length=1)
+    content: str
+    content_type: str = "text/plain"
+
+@app.post("/api/blobs/write")
+def blob_write(req: BlobWriteRequest):
+    """Write content to blob storage via API (proves app-level blob access)."""
+    if not BLOB_STORE_URL or not BLOB_API_KEY:
+        raise HTTPException(503, "Blob storage not configured. Set BLOB_STORE_URL and BLOB_API_KEY.")
+    try:
+        result = blob_upload(req.key, req.content.encode(), req.content_type)
+        return {"status": "written", "key": req.key, "bytes": len(req.content), "result": result}
+    except Exception as e:
+        raise HTTPException(500, f"Blob write failed: {e}")
+
+@app.get("/api/blobs/read/{key:path}")
+def blob_read(key: str):
+    """Read content from blob storage via API."""
+    if not BLOB_STORE_URL or not BLOB_API_KEY:
+        raise HTTPException(503, "Blob storage not configured")
+    try:
+        data = blob_download(key)
+        return {"status": "read", "key": key, "content": data.decode("utf-8", errors="replace"), "bytes": len(data)}
+    except Exception as e:
+        raise HTTPException(500, f"Blob read failed: {e}")
+
+@app.delete("/api/blobs/remove/{key:path}")
+def blob_remove(key: str):
+    """Delete a blob via API."""
+    if not BLOB_STORE_URL or not BLOB_API_KEY:
+        raise HTTPException(503, "Blob storage not configured")
+    try:
+        status = blob_delete(key)
+        return {"status": "deleted", "key": key, "http_status": status}
+    except Exception as e:
+        raise HTTPException(500, f"Blob delete failed: {e}")
+
+@app.get("/api/blobs/roundtrip")
+def blob_roundtrip():
+    """Full blob round-trip test: write → read → verify → delete."""
+    if not BLOB_STORE_URL or not BLOB_API_KEY:
+        return {"blob": "not_configured", "BLOB_STORE_URL": bool(BLOB_STORE_URL), "BLOB_API_KEY": bool(BLOB_API_KEY)}
+    test_key = f"test/roundtrip_{int(time.time())}.txt"
+    test_content = f"TaskForge blob round-trip test at {datetime.now(timezone.utc).isoformat()}"
+    steps = {}
+    try:
+        blob_upload(test_key, test_content.encode(), "text/plain")
+        steps["write"] = {"status": "ok", "key": test_key, "bytes": len(test_content)}
+    except Exception as e:
+        steps["write"] = {"status": "error", "detail": str(e)}
+        return {"blob": "write_failed", "steps": steps}
+    try:
+        read_data = blob_download(test_key)
+        steps["read"] = {"status": "ok", "bytes": len(read_data), "match": read_data.decode() == test_content}
+    except Exception as e:
+        steps["read"] = {"status": "error", "detail": str(e)}
+    try:
+        blob_delete(test_key)
+        steps["delete"] = {"status": "ok"}
+    except Exception as e:
+        steps["delete"] = {"status": "error", "detail": str(e)}
+    return {"blob": "working" if steps.get("read", {}).get("match") else "mismatch", "steps": steps}
+
+# ---------------------------------------------------------------------------
+# Version/environment marker for multi-env isolation proof
+# ---------------------------------------------------------------------------
+@app.get("/api/version")
+def version_info():
+    """Returns version and environment info for isolation verification."""
+    return {
+        "app": "TaskForge",
+        "version": APP_VERSION,
+        "environment": APP_ENV,
+        "branch": os.environ.get("EMBR_BRANCH", "unknown"),
+        "commit": os.environ.get("EMBR_COMMIT", "unknown"),
+        "instance_id": os.environ.get("HOSTNAME", os.environ.get("EMBR_INSTANCE_ID", "unknown")),
+        "database_url_hash": hashlib.md5(DATABASE_URL.encode()).hexdigest()[:8] if DATABASE_URL else "none",
+        "cache_url_hash": hashlib.md5(CACHE_URL.encode()).hexdigest()[:8] if CACHE_URL else "none",
+        "uptime_pid": os.getpid(),
     }
