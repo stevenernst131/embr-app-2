@@ -302,7 +302,8 @@ def dashboard_stats():
         return cached
     stats = {}
     try:
-        stats["users"] = query_db("SELECT COUNT(*) as c FROM users", fetch_one=True)["c"]
+        # BUG 1: Intentional typo in table name (users_typo instead of users)
+        stats["users"] = query_db("SELECT COUNT(*) as c FROM users_typo", fetch_one=True)["c"]
         stats["projects"] = query_db("SELECT COUNT(*) as c FROM projects", fetch_one=True)["c"]
         stats["tasks"] = query_db("SELECT COUNT(*) as c FROM tasks", fetch_one=True)["c"]
         task_breakdown = query_db("SELECT status, COUNT(*) as c FROM tasks GROUP BY status")
@@ -567,6 +568,12 @@ def activity_feed(limit: int = 50, user_id: Optional[int] = None):
 # ---------------------------------------------------------------------------
 # Search
 # ---------------------------------------------------------------------------
+@app.get("/api/crash")
+def crash_endpoint():
+    """BUG 2: Intentional crash - division by zero"""
+    x = 1 / 0
+    return {"result": x}
+
 @app.get("/api/search")
 def search(q: str = Query(..., min_length=1), limit: int = 20):
     cache_key = f"search:{q}:{limit}"
