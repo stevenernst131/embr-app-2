@@ -1,3 +1,4 @@
+version: 1
 platform: python
 platformVersion: "3.12"
 autoDeploy: true
@@ -6,11 +7,15 @@ run:
   port: 8000
   startCommand: bash /output/start.sh
 
-database:
-  enabled: true
-  engine: postgres
-  framework: raw
-  schema: db/schema.sql
+dependencies:
+  app-database:
+    type: postgres
+    description: "Main application database for notes"
+    required: true
+    provides:
+      - name: DATABASE_URL
+        secret: true
+        scope: runtime
 
 cache:
   enabled: true
