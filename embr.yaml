@@ -16,6 +16,14 @@ dependencies:
       - name: DATABASE_URL
         secret: true
         scope: runtime
+  my-secret-thing:
+    type: external
+    description: "test generic dep"
+    required: true
+    provides:
+      - name: MY_SECRET_THING
+        secret: true
+        scope: runtime
 
 cache:
   enabled: true
