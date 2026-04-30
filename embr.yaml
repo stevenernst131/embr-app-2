@@ -24,6 +24,31 @@ dependencies:
       - name: MY_SECRET_THING
         secret: true
         scope: runtime
+  multi-provider:
+    type: external
+    description: "D: multi-provides mixed secret/scope"
+    required: false
+    provides:
+      - name: MULTI_RUNTIME_SECRET
+        secret: true
+        scope: runtime
+      - name: MULTI_RUNTIME_PUBLIC
+        secret: false
+        scope: runtime
+      - name: MULTI_BUILD_SECRET
+        secret: true
+        scope: build
+      - name: MULTI_BUILD_PUBLIC
+        secret: false
+        scope: build
+  second-dep:
+    type: external
+    description: "E: second dep"
+    required: false
+    provides:
+      - name: SECOND_DEP_VAL
+        secret: false
+        scope: runtime
 
 cache:
   enabled: true
