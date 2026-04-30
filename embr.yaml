@@ -24,9 +24,9 @@ dependencies:
       - name: MY_SECRET_THING
         secret: true
         scope: runtime
-  multi-provider:
+  multi-renamed-provider:
     type: external
-    description: "D: multi-provides mixed secret/scope"
+    description: "F-renamed from multi-provider"
     required: false
     provides:
       - name: MULTI_RUNTIME_SECRET
@@ -41,12 +41,43 @@ dependencies:
       - name: MULTI_BUILD_PUBLIC
         secret: false
         scope: build
-  second-dep:
+  third-dep:
     type: external
-    description: "E: second dep"
+    description: "F: renamed dep target"
     required: false
     provides:
-      - name: SECOND_DEP_VAL
+      - name: THIRD_DEP_VAL
+        secret: false
+        scope: runtime
+  dup-provides:
+    type: external
+    description: "J: two provides with same name"
+    required: false
+    provides:
+      - name: DUP_NAME
+        secret: false
+        scope: runtime
+      - name: DUP_NAME
+        secret: true
+        scope: runtime
+  no-provides-dep:
+    type: external
+    description: "J: no provides block"
+    required: false
+  weird.name-with..dots__and-DASHES-99:
+    type: external
+    description: "J: weird name"
+    required: false
+    provides:
+      - name: WEIRD_NAME_VAR
+        secret: false
+        scope: runtime
+  this-is-a-very-long-dependency-name-that-keeps-going-and-going-and-going-and-going-and-going-and-going-and-going-and-going:
+    type: external
+    description: "J: long name"
+    required: false
+    provides:
+      - name: LONG_NAME_VAR
         secret: false
         scope: runtime
 
