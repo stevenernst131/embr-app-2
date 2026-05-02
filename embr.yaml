@@ -27,6 +27,14 @@ dependencies:
       - name: FEATURE_FLAG_BASE_URL
         secret: false
         scope: runtime
+  analytics-service:
+    type: external
+    description: "Second new dep, intentionally unconfigured"
+    required: true
+    provides:
+      - name: ANALYTICS_TOKEN
+        secret: true
+        scope: runtime
 
 cache:
   enabled: true
