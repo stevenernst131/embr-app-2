@@ -1,0 +1,8 @@
+components:
+  - name: web
+    role: web
+    path: /
+    run:
+      port: 3000
+      start: HOSTNAME=0.0.0.0 node server.js
+      healthCheckPath: /api/health
