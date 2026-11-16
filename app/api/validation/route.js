@@ -8,5 +8,6 @@ export async function GET(request) {
   const count = Math.min(20, Math.max(1, Number(url.searchParams.get("lines")) || 1));
   const width = Math.min(20000, Math.max(0, Number(url.searchParams.get("width")) || 0));
   for (let i = 0; i < count; i++) console.log(stableStringify({ event: "validation.request", marker, i, replica: hostname(), unicode: "雪☃ café", padding: "x".repeat(width) }));
-  return Response.json({ release: "hunter-v1", replica: hostname(), requestId: randomUUID(), variable: process.env.BUILDER_HUNTER_PLAIN || null, secretPresent: !!process.env.BUILDER_HUNTER_SECRET });
+  return Response.json({ release: "hunter-v2", replica: hostname(), requestId: randomUUID(), variable: process.env.BUILDER_HUNTER_PLAIN || null, secretPresent: !!process.env.BUILDER_HUNTER_SECRET });
 }
+
