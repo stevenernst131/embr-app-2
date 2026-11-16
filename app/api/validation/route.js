@@ -11,4 +11,5 @@ export async function GET(request) {
   return Response.json({ release: "hunter-v2", replica: hostname(), requestId: randomUUID(), variable: process.env.BUILDER_HUNTER_PLAIN || null, secretPresent: !!process.env.BUILDER_HUNTER_SECRET });
 }
 
-import "builder-hunter-intentionally-missing-module";
+
+

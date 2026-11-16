@@ -6,6 +6,7 @@ components:
     platformVersion: "26"
     run:
       port: 3000
-      start: HOSTNAME=0.0.0.0 node server.js
+      start: node -e "console.error('BUILDER_HUNTER_STARTUP_CRASH');process.exit(17)"
       healthCheckPath: /api/health
+
 
