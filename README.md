@@ -11,3 +11,5 @@ npm start
 
 The production server reads `PORT` and defaults to `3000`.
 
+
+Validation endpoint: GET /api/validation returns the release marker and replica ID. Optional marker, lines (1-20), and width (0-20000) parameters emit bounded diagnostic logs; no credentials are returned. The endpoint reports only whether the synthetic validation secret exists.

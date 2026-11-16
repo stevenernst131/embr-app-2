@@ -2,7 +2,10 @@ components:
   - name: web
     role: web
     path: /
+    platform: nodejs
+    platformVersion: "26"
     run:
       port: 3000
       start: HOSTNAME=0.0.0.0 node server.js
       healthCheckPath: /api/health
+
